@@ -21,6 +21,7 @@ void Client::init() {
 	if (socket == INVALID_SOCKET) {
 		WSACleanup();
 		throw "socker error";
+		// throw "TCP socker error"
 	}
 
 	SOCKADDR_IN tAddr = {};
@@ -37,10 +38,30 @@ void Client::init() {
 
 	bThreadRun = true;
 	recvThread = new thread(&Client::recvLoop, this);
+
+
+	/*
+	*	Integrate TCP, UDP into same init,close func
+	*
+	*   				WARNING !!!
+	*   TCP socket's port Num +1 = UDP socket's port Num
+	*/
+
+	// init udp socket
+	socketU = ::socket(PF_INET, SOCK_STREAM, IPPROTO_UDP);
+	if (socket == INVALID_SOCKET) {
+		WSACleanup();
+		throw "UDP socker error";
+	}
+
 }
 void Client::close() {
 	if (socket != INVALID_SOCKET)
 		closesocket(socket);
+
+	// `edit` for udp socket
+	if (socket != INVALID_SOCKET)
+		closesocket(socketU);
 
 	bThreadRun = false;
 	if (recvThread != nullptr) {
@@ -81,7 +102,7 @@ void Client::recvLoop() {
 			}));
 		}
 
-		// Event Thread Á¤¸®
+		// Event Thread ï¿½ï¿½ï¿½ï¿½
 		for (auto iter = eventThreadList.begin(); iter != eventThreadList.end(); ) {
 			if (!(*iter)->joinable())
 				iter = eventThreadList.erase(iter);
@@ -91,4 +112,21 @@ void Client::recvLoop() {
 	}
 
 	bThreadRun = false;
+}
+
+// `edit` for udp
+void Client::sendU(const char *buff, int len) const {
+	SOCKADDR_IN target;
+	target.sin_family = PF_INET;
+	target.sin_addr.s_addr = inet_addr(serverAddr);
+	target.sin_port = htons(port+1);
+	
+	int ret = sendto(socketU, buff, len, 0, reinterpret_cast<SOCKADDR*>(&target), sizeof(target));
+		if (ret < 0)
+			throw std::system_error(WSAGetLastError(), std::system_category(), "UDP send failed");
+}
+void Client::recvLoopU() {
+
+
+
 }

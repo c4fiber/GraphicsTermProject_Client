@@ -20,6 +20,9 @@ public:
 	void send(const char *buff, int len) const;
 	void recvLoop();
 
+	void sendU(const char *buff, int len) const;//
+	void recvLoopU();//
+
 	inline void setOnRecv(void (*onRecv)(const char *, const int &)) {
 		this->onRecv = onRecv;
 	}
@@ -30,6 +33,7 @@ public:
 
 private:
 	SOCKET socket = INVALID_SOCKET;
+	SOCKET socketU = INVALID_SOCKET;//
 
 	const char *serverAddr;
 	int port;
