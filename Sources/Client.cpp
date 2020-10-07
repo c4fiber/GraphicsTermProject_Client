@@ -126,7 +126,7 @@ void Client::sendU(const char *buff, int len) const {
 			throw std::system_error(WSAGetLastError(), std::system_category(), "UDP send failed");
 }
 void Client::recvLoopU() {
-
+//TODO
 
 
 }
