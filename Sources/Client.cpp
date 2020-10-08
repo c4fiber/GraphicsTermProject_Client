@@ -48,11 +48,16 @@ void Client::init() {
 	*/
 
 	// init udp socket
-	socketU = ::socket(PF_INET, SOCK_STREAM, IPPROTO_UDP);
+	socketU = ::socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	if (socket == INVALID_SOCKET) {
 		WSACleanup();
 		throw "UDP socker error";
 	}
+	SOCKADDR_IN target = {};
+	target.sin_family = PF_INET;
+	target.sin_addr.s_addr = inet_addr(serverAddr);
+	target.sin_port = htons(port+1);
+	
 
 }
 void Client::close() {
@@ -114,19 +119,44 @@ void Client::recvLoop() {
 	bThreadRun = false;
 }
 
-// `edit` for udp
+// `edit` <Function> + 'U' == for UDP
 void Client::sendU(const char *buff, int len) const {
-	SOCKADDR_IN target;
-	target.sin_family = PF_INET;
-	target.sin_addr.s_addr = inet_addr(serverAddr);
-	target.sin_port = htons(port+1);
-	
 	int ret = sendto(socketU, buff, len, 0, reinterpret_cast<SOCKADDR*>(&target), sizeof(target));
 		if (ret < 0)
 			throw std::system_error(WSAGetLastError(), std::system_category(), "UDP send failed");
 }
 void Client::recvLoopU() {
-//TODO
+	// Maximum size of UDP datagram = 65,535
+	char buff[BUFF_SIZE] = {};
+
+	sockaddr_in from;
+	int fromlen = sizeof(from);
+	int recvlen = recvfrom(socketU, buff, BUFF_SIZE, 0, reinterpret_cast<SOCKADDR*>(&from), &fromlen);
+
+	while (bThreadRun) {
+		
+		//  recvlen: ERROR < closed=0 < length of datagram  
+		if (recvlen < 0)
+			continue;
+		else if (recvlen == 0)
+			break;
+
+		if (onRecv != nullptr) {
+			eventThreadList.push_back(new thread([=]() {
+				this->onRecv(buff, BUFF_SIZE);
+			}));
+		}
+
+		// Event Thread ����
+		for (auto iter = eventThreadList.begin(); iter != eventThreadList.end(); ) {
+			if (!(*iter)->joinable())
+				iter = eventThreadList.erase(iter);
+			else
+				iter++;
+		}
+	}
+
+	bThreadRun = false;
 
 
 }
