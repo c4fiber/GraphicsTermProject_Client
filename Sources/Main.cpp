@@ -78,6 +78,7 @@ Game game;
 
 GLvoid Screen(GLvoid) {
 	glClear(GL_COLOR_BUFFER_BIT);
+	
 	glViewport(0, 0, 300, 300);
 	
 	glBegin(GL_POLYGON);
@@ -122,7 +123,7 @@ int WINAPI WinMain(
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
 	glutInitWindowSize(300, 300);
 	glutInitWindowPosition(100, 100);
-	glutCreateWindow("ÀÌÇö");
+	glutCreateWindow("ï¿½ï¿½ï¿½ï¿½");
 
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 	glMatrixMode(GL_PROJECTION);

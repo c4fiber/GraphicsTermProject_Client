@@ -53,11 +53,6 @@ void Client::init() {
 		WSACleanup();
 		throw "UDP socker error";
 	}
-	SOCKADDR_IN target = {};
-	target.sin_family = PF_INET;
-	target.sin_addr.s_addr = inet_addr(serverAddr);
-	target.sin_port = htons(port+1);
-	
 
 }
 void Client::close() {
@@ -121,6 +116,11 @@ void Client::recvLoop() {
 
 // `edit` <Function> + 'U' == for UDP
 void Client::sendU(const char *buff, int len) const {
+	SOCKADDR_IN target = {};
+	target.sin_family = PF_INET;
+	target.sin_addr.s_addr = inet_addr(serverAddr);
+	target.sin_port = htons(port+1);
+	
 	int ret = sendto(socketU, buff, len, 0, reinterpret_cast<SOCKADDR*>(&target), sizeof(target));
 		if (ret < 0)
 			throw std::system_error(WSAGetLastError(), std::system_category(), "UDP send failed");
